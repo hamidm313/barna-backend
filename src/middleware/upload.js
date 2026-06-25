@@ -5,10 +5,10 @@ const fs = require('fs');
 
 const ensureDir = (dir) => { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); };
 
+// Local storage (temp before CDN upload)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const type = file.mimetype.startsWith('image/') ? 'images' : file.mimetype.startsWith('video/') ? 'videos' : 'documents';
-    const dir = path.join(process.env.UPLOAD_DIR || 'uploads', type);
+    const dir = path.join(process.env.UPLOAD_DIR || 'uploads', 'temp');
     ensureDir(dir);
     cb(null, dir);
   },
@@ -18,13 +18,15 @@ const storage = multer.diskStorage({
   },
 });
 
+const memoryStorage = multer.memoryStorage();
+
 const fileFilter = (req, file, cb) => {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'application/pdf'];
+  const allowed = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','application/pdf'];
   cb(null, allowed.includes(file.mimetype));
 };
 
 const upload = multer({
-  storage,
+  storage: process.env.CDN_PROVIDER ? memoryStorage : storage,
   fileFilter,
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 },
 });
