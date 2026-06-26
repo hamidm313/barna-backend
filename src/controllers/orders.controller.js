@@ -9,7 +9,7 @@ const list = async (req, res, next) => {
     const params = [];
     if (status) { where.push('o.status = ?'); params.push(status); }
     if (req.user.role !== 'admin') { where.push('o.user_id = ?'); params.push(req.user.id); }
-    const [rows] = await db.execute(`SELECT o.*, c.name as clothing_name FROM orders o LEFT JOIN clothing c ON o.clothing_id = c.id WHERE ${where.join(' AND ')} ORDER BY o.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    const [rows] = await db.execute(`SELECT o.*, c.display_name as clothing_display_name FROM orders o LEFT JOIN clothing c ON o.clothing_id = c.id WHERE ${where.join(' AND ')} ORDER BY o.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     res.json(rows);
   } catch (err) { next(err); }
 };

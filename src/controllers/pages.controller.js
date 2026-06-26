@@ -2,7 +2,7 @@ const db = require('../config/database');
 
 const list = async (req, res, next) => {
   try {
-    const [rows] = await db.execute('SELECT id, slug, title, is_published, updated_at FROM pages ORDER BY slug ASC');
+    const [rows] = await db.execute('SELECT id, slug, display_name, is_published, updated_at FROM pages ORDER BY slug ASC');
     res.json(rows);
   } catch (err) { next(err); }
 };
@@ -18,12 +18,12 @@ const getOne = async (req, res, next) => {
 const upsert = async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const { title, content, meta_title, meta_description, is_published } = req.body;
+    const { display_name, content, meta_title, meta_description, is_published } = req.body;
     const [existing] = await db.execute('SELECT id FROM pages WHERE slug = ?', [slug]);
     if (existing.length) {
-      await db.execute('UPDATE pages SET title=?, content=?, meta_title=?, meta_description=?, is_published=?, updated_by=? WHERE slug=?', [title, content, meta_title, meta_description, is_published ? 1 : 0, req.user.id, slug]);
+      await db.execute('UPDATE pages SET display_name=?, content=?, meta_title=?, meta_description=?, is_published=?, updated_by=? WHERE slug=?', [display_name, content, meta_title, meta_description, is_published ? 1 : 0, req.user.id, slug]);
     } else {
-      await db.execute('INSERT INTO pages (slug, title, content, meta_title, meta_description, is_published, updated_by) VALUES (?,?,?,?,?,?,?)', [slug, title, content, meta_title, meta_description, is_published ? 1 : 0, req.user.id]);
+      await db.execute('INSERT INTO pages (slug, display_name, content, meta_title, meta_description, is_published, updated_by) VALUES (?,?,?,?,?,?,?)', [slug, display_name, content, meta_title, meta_description, is_published ? 1 : 0, req.user.id]);
     }
     res.json({ message: 'Saved' });
   } catch (err) { next(err); }

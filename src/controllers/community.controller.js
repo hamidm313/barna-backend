@@ -8,15 +8,15 @@ const list = async (req, res, next) => {
     const params = [];
     if (ethnic_group) { where.push('ethnic_group_id = (SELECT id FROM ethnic_groups WHERE slug = ?)'); params.push(ethnic_group); }
     if (req.user?.role === 'admin' && status) { where[0] = 'status = ?'; params.unshift(status); }
-    const [rows] = await db.execute(`SELECT p.*, u.name as user_name, eg.name as ethnic_group_name FROM community_posts p LEFT JOIN users u ON p.user_id = u.id LEFT JOIN ethnic_groups eg ON p.ethnic_group_id = eg.id WHERE ${where.join(' AND ')} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    const [rows] = await db.execute(`SELECT p.*, u.display_name as user_display_name, eg.display_name as ethnic_group_display_name FROM community_posts p LEFT JOIN users u ON p.user_id = u.id LEFT JOIN ethnic_groups eg ON p.ethnic_group_id = eg.id WHERE ${where.join(' AND ')} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     res.json(rows);
   } catch (err) { next(err); }
 };
 
 const create = async (req, res, next) => {
   try {
-    const { title, content, images, ethnic_group_id } = req.body;
-    const [result] = await db.execute('INSERT INTO community_posts (user_id, title, content, images, ethnic_group_id) VALUES (?,?,?,?,?)', [req.user?.id || null, title, content, JSON.stringify(images || []), ethnic_group_id || null]);
+    const { display_name, content, images, ethnic_group_id } = req.body;
+    const [result] = await db.execute('INSERT INTO community_posts (user_id, display_name, content, images, ethnic_group_id) VALUES (?,?,?,?,?)', [req.user?.id || null, display_name, content, JSON.stringify(images || []), ethnic_group_id || null]);
     res.status(201).json({ id: result.insertId, message: 'Post submitted for review' });
   } catch (err) { next(err); }
 };

@@ -2,7 +2,7 @@ const db = require('../config/database');
 
 const list = async (req, res, next) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM ethnic_groups WHERE is_active = 1 ORDER BY display_order ASC, name ASC');
+    const [rows] = await db.execute('SELECT * FROM ethnic_groups WHERE is_active = 1 ORDER BY display_order ASC, display_name ASC');
     res.json(rows);
   } catch (err) { next(err); }
 };
@@ -17,16 +17,16 @@ const getOne = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { name, slug, description, image, display_order } = req.body;
-    const [result] = await db.execute('INSERT INTO ethnic_groups (name, slug, description, image, display_order) VALUES (?,?,?,?,?)', [name, slug, description, image, display_order || 0]);
+    const { display_name, slug, description, image, display_order } = req.body;
+    const [result] = await db.execute('INSERT INTO ethnic_groups (display_name, slug, description, image, display_order) VALUES (?,?,?,?,?)', [display_name, slug, description, image, display_order || 0]);
     res.status(201).json({ id: result.insertId });
   } catch (err) { next(err); }
 };
 
 const update = async (req, res, next) => {
   try {
-    const { name, slug, description, image, display_order, is_active } = req.body;
-    await db.execute('UPDATE ethnic_groups SET name=?, slug=?, description=?, image=?, display_order=?, is_active=? WHERE id=?', [name, slug, description, image, display_order, is_active ? 1 : 0, req.params.id]);
+    const { display_name, slug, description, image, display_order, is_active } = req.body;
+    await db.execute('UPDATE ethnic_groups SET display_name=?, slug=?, description=?, image=?, display_order=?, is_active=? WHERE id=?', [display_name, slug, description, image, display_order, is_active ? 1 : 0, req.params.id]);
     res.json({ message: 'Updated' });
   } catch (err) { next(err); }
 };

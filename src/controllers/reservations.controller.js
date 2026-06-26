@@ -8,14 +8,14 @@ const list = async (req, res, next) => {
     const params = [];
     if (status) { where.push('r.status = ?'); params.push(status); }
     if (req.user.role !== 'admin') { where.push('r.user_id = ?'); params.push(req.user.id); }
-    const [rows] = await db.execute(`SELECT r.*, c.name as clothing_name, c.images as clothing_images, u.name as user_name, u.email as user_email FROM reservations r LEFT JOIN clothing c ON r.clothing_id = c.id LEFT JOIN users u ON r.user_id = u.id WHERE ${where.join(' AND ')} ORDER BY r.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    const [rows] = await db.execute(`SELECT r.*, c.display_name as clothing_display_name, c.images as clothing_images, u.display_name as user_display_name, u.email as user_email FROM reservations r LEFT JOIN clothing c ON r.clothing_id = c.id LEFT JOIN users u ON r.user_id = u.id WHERE ${where.join(' AND ')} ORDER BY r.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     res.json(rows);
   } catch (err) { next(err); }
 };
 
 const getOne = async (req, res, next) => {
   try {
-    const [rows] = await db.execute(`SELECT r.*, c.name as clothing_name, c.images as clothing_images, c.rental_price_per_day, u.name as user_name FROM reservations r LEFT JOIN clothing c ON r.clothing_id = c.id LEFT JOIN users u ON r.user_id = u.id WHERE r.id = ?`, [req.params.id]);
+    const [rows] = await db.execute(`SELECT r.*, c.display_name as clothing_display_name, c.images as clothing_images, c.rental_price_per_day, u.display_name as user_display_name FROM reservations r LEFT JOIN clothing c ON r.clothing_id = c.id LEFT JOIN users u ON r.user_id = u.id WHERE r.id = ?`, [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     const r = rows[0];
     if (req.user.role !== 'admin' && r.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });

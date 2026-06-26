@@ -9,7 +9,7 @@ const list = async (req, res, next) => {
     if (clothing_id) { where.push('c.clothing_id = ?'); params.push(clothing_id); }
     if (status) { where.push('c.status = ?'); params.push(status); }
     else if (req.user?.role !== 'admin') { where.push('c.status = "approved"'); }
-    const [rows] = await db.execute(`SELECT c.*, u.name as user_name FROM comments c LEFT JOIN users u ON c.user_id = u.id WHERE ${where.join(' AND ')} ORDER BY c.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    const [rows] = await db.execute(`SELECT c.*, u.display_name as user_display_name FROM comments c LEFT JOIN users u ON c.user_id = u.id WHERE ${where.join(' AND ')} ORDER BY c.created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     res.json(rows);
   } catch (err) { next(err); }
 };

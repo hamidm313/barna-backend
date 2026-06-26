@@ -4,16 +4,16 @@ const db = require('../config/database');
 
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { display_name, email, password, phone } = req.body;
     const [existing] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
     if (existing.length) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 12);
     const [result] = await db.execute(
-      'INSERT INTO users (name, email, password_hash, phone) VALUES (?, ?, ?, ?)',
-      [name, email, hash, phone || null]
+      'INSERT INTO users (display_name, email, password_hash, phone) VALUES (?, ?, ?, ?)',
+      [display_name, email, hash, phone || null]
     );
     const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
-    res.status(201).json({ token, user: { id: result.insertId, name, email, role: 'user' } });
+    res.status(201).json({ token, user: { id: result.insertId, display_name, email, role: 'user' } });
   } catch (err) { next(err); }
 };
 
@@ -26,21 +26,21 @@ const login = async (req, res, next) => {
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar } });
+    res.json({ token, user: { id: user.id, display_name: user.display_name, email: user.email, role: user.role, avatar: user.avatar } });
   } catch (err) { next(err); }
 };
 
 const me = async (req, res, next) => {
   try {
-    const [rows] = await db.execute('SELECT id, name, email, phone, role, avatar, created_at FROM users WHERE id = ?', [req.user.id]);
+    const [rows] = await db.execute('SELECT id, display_name, email, phone, role, avatar, created_at FROM users WHERE id = ?', [req.user.id]);
     res.json(rows[0]);
   } catch (err) { next(err); }
 };
 
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, phone } = req.body;
-    await db.execute('UPDATE users SET name = ?, phone = ? WHERE id = ?', [name, phone, req.user.id]);
+    const { display_name, phone } = req.body;
+    await db.execute('UPDATE users SET display_name = ?, phone = ? WHERE id = ?', [display_name, phone, req.user.id]);
     res.json({ message: 'Profile updated' });
   } catch (err) { next(err); }
 };

@@ -6,9 +6,9 @@ const list = async (req, res, next) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
     let where = ['1=1'];
     const params = [];
-    if (search) { where.push('(name LIKE ? OR email LIKE ?)'); params.push(`%${search}%`, `%${search}%`); }
+    if (search) { where.push('(display_name LIKE ? OR email LIKE ?)'); params.push(`%${search}%`, `%${search}%`); }
     if (role) { where.push('role = ?'); params.push(role); }
-    const [rows] = await db.execute(`SELECT id, name, email, phone, role, avatar, is_active, created_at FROM users WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    const [rows] = await db.execute(`SELECT id, display_name, email, phone, role, avatar, is_active, created_at FROM users WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     const [count] = await db.execute(`SELECT COUNT(*) as total FROM users WHERE ${where.join(' AND ')}`, params);
     res.json({ data: rows, total: count[0].total });
   } catch (err) { next(err); }
